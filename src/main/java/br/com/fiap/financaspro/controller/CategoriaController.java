@@ -1,5 +1,8 @@
 package br.com.fiap.financaspro.controller;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -36,11 +39,10 @@ public class CategoriaController {
     }
 
     @PostMapping
-    @ResponseStatus(code = HttpStatus.CREATED)
+    @ResponseStatus(CREATED)
     public Categoria create(@RequestBody Categoria categoria) { // binding
         log.info("cadastrando categoria {} ", categoria);
-        repository.save(categoria);
-        return categoria;
+        return repository.save(categoria);
     }
 
     @GetMapping("{id}")
@@ -49,46 +51,35 @@ public class CategoriaController {
 
         return repository
                 .findById(id)
-                .map(ResponseEntity::ok) //reference method
+                .map(ResponseEntity::ok) // reference method
                 .orElse(ResponseEntity.notFound().build());
 
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Object> destroy(@PathVariable Long id) {
+    @ResponseStatus(NO_CONTENT)
+    public void destroy(@PathVariable Long id) {
         log.info("apagando categoria");
 
         verificarSeExisteCategoria(id);
-
         repository.deleteById(id);
-        return ResponseEntity.noContent().build();
-
     }
 
-  
-
     @PutMapping("{id}")
-    public ResponseEntity<Categoria> update(@PathVariable Long id, @RequestBody Categoria categoria){
+    public Categoria update(@PathVariable Long id, @RequestBody Categoria categoria) {
         log.info("atualizando categoria com id {} para {}", id, categoria);
 
         verificarSeExisteCategoria(id);
-
         categoria.setId(id);
-        repository.save(categoria);
-        return ResponseEntity.ok(categoria);
+        return repository.save(categoria);
     }
 
-
-
-
-  private void verificarSeExisteCategoria(Long id) {
+    private void verificarSeExisteCategoria(Long id) {
         repository
-            .findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND, 
-                                "Não existe categoria com o id informado. Consulte lista em /categoria"
-                            ));
+                .findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Não existe categoria com o id informado. Consulte lista em /categoria"));
     }
-
 
 }
